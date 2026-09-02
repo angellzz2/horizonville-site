@@ -1,0 +1,3 @@
+import {env} from "cloudflare:workers";import {requireAdmin} from "../auth";
+export async function GET(req:Request){if(!await requireAdmin(req))return Response.json({error:"Acesso negado"},{status:401});const row=await (env as any).DB.prepare("SELECT value FROM site_content WHERE key=?").bind("main").first();return Response.json(row?JSON.parse(row.value):{})}
+export async function PUT(req:Request){if(!await requireAdmin(req))return Response.json({error:"Acesso negado"},{status:401});const data=await req.json();await (env as any).DB.prepare("INSERT INTO site_content(key,value,updated_at) VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at").bind("main",JSON.stringify(data),Date.now()).run();return Response.json({ok:true})}

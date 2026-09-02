@@ -1,0 +1,2 @@
+import {env} from "cloudflare:workers";
+export async function requireAdmin(req:Request){const raw=req.headers.get("cookie")||"",token=raw.match(/(?:^|;\s*)hv_admin_session=([^;]+)/)?.[1];if(!token)return null;const row=await (env as any).DB.prepare("SELECT discord_id,expires_at FROM admin_sessions WHERE token = ?").bind(token).first();if(!row||Number(row.expires_at)<Date.now())return null;return row}
